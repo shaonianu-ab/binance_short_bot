@@ -1,0 +1,5 @@
+aiohttp>=3.9.0
+PyYAML>=6.0.1
+websockets>=12.0
+python-binance>=1.0.19
+eth-utils>=4.1.1

@@ -1,0 +1,25 @@
+alchemy:
+  ws_url: "wss://bnb-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_APIKEY" # alchemy APIKEY 替换YOUR_ALCHEMY_APIKEY
+  watch_address: "0x73d8bd54f7cf5fab43fe4ef40a62d390644946db" # 分发地址 此处不动
+
+binance:
+  api_key: "" # 你的币安API_KEY 填入
+  api_secret: "" # 你的币安API_SERCET 填入
+  testnet: false # 测试网 默认false
+  recv_window: 5000 # 不用改
+
+risk:
+  trigger_value_usdt: 400000 # 链上动账开单门槛 建议40万U
+  short_notional_usdt: 1000 # 你要开的总仓位价值
+  leverage: 10 # 杠杆倍数 注意，你的保证金余额必须大于最好远远大于short_notional_usdt/leverage
+  margin_type: "ISOLATED" # 逐仓 or 全仓（CROSS）
+  trade_when_token_not_in_list: false # 如果不是alpha代币，是否还要继续开单逻辑（此处未测试， 有需要的可以自己跑跑看）
+
+# 不用动
+binance_token_list:
+  url: "https://www.binance.com/bapi/defi/v1/public/wallet-direct/buw/wallet/cex/alpha/all/token/list"
+  max_requests_per_minute: 2
+  cache_ttl_seconds: 45
+
+runtime:
+  log_level: "INFO"
