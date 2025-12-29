@@ -50,6 +50,8 @@ async def main() -> None:
         leverage=st.leverage,
         margin_type=st.margin_type,
         trade_when_token_not_in_list=st.trade_when_token_not_in_list,
+        take_profit_pct=st.take_profit_pct,
+        stop_loss_pct=st.stop_loss_pct,
     )
 
     log.info("started. watching=%s", st.watch_address)

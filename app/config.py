@@ -20,6 +20,9 @@ class Settings:
     leverage: int
     margin_type: str
     trade_when_token_not_in_list: bool
+    take_profit_pct: float
+    stop_loss_pct: float
+
 
     token_list_url: str
     token_list_max_rpm: int
@@ -46,6 +49,9 @@ def load_settings(path: str) -> Settings:
         leverage=int(raw["risk"]["leverage"]),
         margin_type=str(raw["risk"]["margin_type"]).upper(),
         trade_when_token_not_in_list=bool(raw["risk"].get("trade_when_token_not_in_list", False)),
+        take_profit_pct=float(raw["risk"].get("take_profit_pct", 0.0)),
+        stop_loss_pct=float(raw["risk"].get("stop_loss_pct", 0.0)),
+
 
         token_list_url=raw["binance_token_list"]["url"],
         token_list_max_rpm=int(raw["binance_token_list"].get("max_requests_per_minute", 2)),

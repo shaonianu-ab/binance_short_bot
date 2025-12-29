@@ -23,6 +23,8 @@ class Strategy:
         leverage: int,
         margin_type: str,
         trade_when_token_not_in_list: bool,
+        take_profit_pct: float,
+        stop_loss_pct: float,
     ) -> None:
         self.registry = token_registry
         self.trader = trader
@@ -33,6 +35,8 @@ class Strategy:
         self.leverage = leverage
         self.margin_type = margin_type
         self.trade_when_token_not_in_list = trade_when_token_not_in_list
+        self.take_profit_pct = float(take_profit_pct or 0.0)
+        self.stop_loss_pct = float(stop_loss_pct or 0.0)
 
         self._seen_txs = set()
         self._seen_lock = asyncio.Lock()
@@ -101,7 +105,41 @@ class Strategy:
             )
 
             if order:
-                log.warning("SHORT OPENED: %s orderId=%s tx=%s", futures_symbol, order.get("orderId"), evt.tx_hash)
+                log.warning(
+                    "\n"
+                    "********************************************************************\n"
+                    "********************  SHORT OPENED (TRADE)  ************************\n"
+                    "********************************************************************\n"
+                    "* symbol  : %-52s *\n"
+                    "* orderId : %-52s *\n"
+                    "* tx      : %-52s *\n"
+                    "********************************************************************",
+                    futures_symbol,
+                    str(order.get("orderId")),
+                    evt.tx_hash,
+                )
+
+                # 止盈止损开始
+                if self.take_profit_pct > 0 or self.stop_loss_pct > 0:
+                    # 取一个近似 entry：用 mark price（简单稳）
+                    entry_price = self.trader.get_mark_price(futures_symbol)
+                    if entry_price and entry_price > 0:
+                        res = self.trader.place_tp_sl_for_short(
+                            symbol=futures_symbol,
+                            entry_price=entry_price,
+                            take_profit_pct=self.take_profit_pct,
+                            stop_loss_pct=self.stop_loss_pct,
+                        )
+                        log.warning(
+                            "TP/SL placed: %s tp=%s sl=%s",
+                            futures_symbol,
+                            (res.get("tp") or {}).get("orderId") if res.get("tp") else None,
+                            (res.get("sl") or {}).get("orderId") if res.get("sl") else None,
+                        )
+                    else:
+                        log.warning("TP/SL skipped (no entry_price): %s", futures_symbol)
+                else:
+                    log.warning("TP/SL all 0, TP/SL skipped: %s", futures_symbol)
             else:
                 log.error("SHORT FAILED: %s tx=%s", futures_symbol, evt.tx_hash)
 

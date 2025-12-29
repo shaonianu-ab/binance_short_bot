@@ -14,6 +14,9 @@ risk:
   leverage: 10 # 杠杆倍数 注意，你的保证金余额必须大于最好远远大于short_notional_usdt/leverage
   margin_type: "ISOLATED" # 逐仓 or 全仓（CROSS）
   trade_when_token_not_in_list: false # 如果不是alpha代币，是否还要继续开单逻辑（此处未测试， 有需要的可以自己跑跑看）
+  # 止盈/止损比例（0=不启用）
+  take_profit_pct: 0.03   # 例如 0.03 = 3% 止盈（做空：价格下跌 3%）
+  stop_loss_pct: 0.03     # 例如 0.01 = 1% 止损（做空：价格上涨 1%）
 
 # 不用动
 binance_token_list:
