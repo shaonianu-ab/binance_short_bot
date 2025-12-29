@@ -24,7 +24,7 @@ pip install -r requirements.txt
 ```
 
 # 编辑 config.yaml
-```
+- 在config.yaml中按照提示填写你的信息。
 
 ## 运行
 ```bash
@@ -35,6 +35,21 @@ python main.py
 - 仅监听 ERC20 Transfer（不含原生 BNB 转账）
 - 默认下单带 positionSide="SHORT"（Hedge Mode）。若你账户是 One-way Mode，需要在 `app/binance_futures.py` 中删除该字段。
 - 建议先用 testnet 或小号测试。
+
+## 服务端运行
+- 你也可以不直接使用python main.py的方式来运行本app。为了方便远程管理，你可以直接执行start_server.sh启动服务端，并在你的服务器放行9689端口。然后你可以使用http://公网IP:端口/接口名来控制main.py的启停：
+- 启动main.py监听
+```bash
+http://公网IP:9689/start
+```
+- 停止main.py监听
+```bash
+http://公网IP:9689/stop
+```
+- 查看监听状态
+```bash
+http://公网IP:9689/status
+```
 
 ## 安全提醒
 - 使用本开源代码即代表您了解并熟悉有关脚本的部署/调试。
