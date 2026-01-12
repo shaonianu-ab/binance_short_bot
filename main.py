@@ -5,19 +5,9 @@ from app.config import load_settings
 from app.logger import setup_logging
 from app.token_registry import BinanceTokenRegistry
 from app.binance_futures import BinanceFuturesTrader
-from app.bsc_ws_listener import BscAlchemyWsListener
+from app.bsc_ws_listener import BscWsListener
 from app.strategy import Strategy
 from app.erc20_metadata import ERC20MetadataClient
-
-
-def ws_to_http(ws_url: str) -> str:
-    if ws_url.startswith("wss://"):
-        return "https://" + ws_url[len("wss://"):]
-    if ws_url.startswith("ws://"):
-        return "http://" + ws_url[len("ws://"):]
-    return ws_url
-
-
 async def main() -> None:
     st = load_settings("config.yaml")
     setup_logging(st.log_level)
@@ -36,10 +26,9 @@ async def main() -> None:
         recv_window=st.binance_recv_window,
     )
 
-    listener = BscAlchemyWsListener(st.alchemy_ws_url, st.watch_address)
+    listener = BscWsListener(st.rpc_ws_url, st.watch_address)
 
-    rpc_http_url = ws_to_http(st.alchemy_ws_url)
-    meta_client = ERC20MetadataClient(rpc_http_url=rpc_http_url, cache_ttl_sec=24 * 3600)
+    meta_client = ERC20MetadataClient(rpc_http_url=st.rpc_http_url, cache_ttl_sec=24 * 3600)
 
     strat = Strategy(
         token_registry=registry,

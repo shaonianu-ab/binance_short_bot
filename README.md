@@ -1,6 +1,6 @@
 # BSC -> Binance Futures Short Bot (alpha)
 
-监听 BSC 指定地址的 ERC20 `Transfer` 转入事件（基于 Alchemy BSC WebSocket），
+监听 BSC 指定地址的 ERC20 `Transfer` 转入事件（基于 BSC WebSocket：Alchemy / Infura / 自定义节点），
 当转入价值超过阈值时，在 Binance USDT-M 合约市场开空（MARKET SELL）。
 
 ## 目录
@@ -12,7 +12,10 @@
 - app/strategy.py: 核心策略
 
 ## Start
-- 你必须拥有alchemy的账号。并获取APIKEY并开通BSC主链操作权限。（https://www.alchemy.com/）
+- 你需要一个可用的 BSC RPC 服务（任选其一）：
+  - Alchemy（推荐）：申请 APIKEY 并开通 BNB Chain 主网权限（https://www.alchemy.com/）
+  - Infura：申请 APIKEY（MetaMask Developer / Infura Dashboard），启用 BNB Smart Chain（BSC）网络
+  - 或者自建 / 其它服务商：使用 provider=custom 填写 ws_url + http_url
 - 你必须会注册并使用Binance API。
 - 你必须有简单的项目部署经验。
 - 你必须拥有一台稳定的可访问境外网站的服务器/本地主机。注意，必须要稳定的网络。

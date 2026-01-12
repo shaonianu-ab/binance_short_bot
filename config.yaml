@@ -1,5 +1,12 @@
-alchemy:
-  ws_url: "wss://bnb-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_APIKEY" # alchemy APIKEY 替换YOUR_ALCHEMY_APIKEY
+rpc:
+  # 只能启用一种端点（单一 provider），不要同时保留 legacy 的 `alchemy:` 段。
+  # provider: alchemy / infura
+  provider: alchemy
+
+  # provider=alchemy / infura
+  # 填 api_key，程序会自动生成 ws+http 端点
+  api_key: ""
+
   watch_address: "0x73d8bd54f7cf5fab43fe4ef40a62d390644946db" # 分发地址 此处不动
 
 binance:

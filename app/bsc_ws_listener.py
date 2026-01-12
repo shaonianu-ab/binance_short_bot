@@ -25,7 +25,12 @@ class ERC20TransferIn:
     block_number: int
 
 
-class BscAlchemyWsListener:
+class BscWsListener:
+    """BSC WebSocket listener (Alchemy/Infura/custom).
+
+    Uses standard JSON-RPC over WebSocket (eth_subscribe logs).
+    """
+
     def __init__(self, ws_url: str, watch_address: str) -> None:
         self.ws_url = ws_url
         self.watch_address = norm_addr(watch_address)
@@ -110,3 +115,7 @@ class BscAlchemyWsListener:
             )
         except Exception:
             return None
+
+
+# Backward-compatible alias (old name referenced in README / older code)
+BscAlchemyWsListener = BscWsListener
