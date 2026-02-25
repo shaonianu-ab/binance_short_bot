@@ -69,6 +69,40 @@ class BinanceFuturesTrader:
             log.warning("get_mark_price error: %s", e, exc_info=True)
             return None
 
+    def get_position_entry_price(self, symbol: str, position_side: str = "SHORT") -> Optional[float]:
+        """
+        读取当前持仓的真实 entryPrice，优先匹配指定 positionSide。
+        """
+        try:
+            rows = self.client.futures_position_information(symbol=symbol, recvWindow=self.recv_window)
+            if not isinstance(rows, list):
+                return None
+
+            wanted_side = (position_side or "").upper()
+            fallback_entry: Optional[float] = None
+
+            for row in rows:
+                side = str(row.get("positionSide") or "").upper()
+                try:
+                    entry = float(row.get("entryPrice") or 0.0)
+                    amt = float(row.get("positionAmt") or 0.0)
+                except Exception:
+                    continue
+
+                if entry <= 0:
+                    continue
+
+                if abs(amt) > 0 and wanted_side and side == wanted_side:
+                    return entry
+
+                if abs(amt) > 0 and fallback_entry is None:
+                    fallback_entry = entry
+
+            return fallback_entry
+        except Exception as e:
+            log.warning("get_position_entry_price error: %s", e, exc_info=True)
+            return None
+
     @staticmethod
     def _round_step(qty: float, step: float) -> float:
         if step <= 0:
@@ -187,7 +221,7 @@ class BinanceFuturesTrader:
         - TAKE_PROFIT_MARKET + closePosition=True （买入平空）
         - STOP_MARKET        + closePosition=True （买入止损）
         """
-        results: Dict[str, Any] = {"tp": None, "sl": None}
+        results: Dict[str, Any] = {"tp": None, "sl": None, "tp_trigger": None, "sl_trigger": None}
 
         try:
             if entry_price <= 0:
@@ -208,6 +242,8 @@ class BinanceFuturesTrader:
 
             tp_trigger = self._round_to_tick_str(tp_price, tick) if (tp_price and tick) else (str(tp_price) if tp_price else None)
             sl_trigger = self._round_to_tick_str(sl_price, tick) if (sl_price and tick) else (str(sl_price) if sl_price else None)
+            results["tp_trigger"] = tp_trigger
+            results["sl_trigger"] = sl_trigger
 
             # 注意：合约触发单通常要设置 workingType（MARK_PRICE/CONTRACT_PRICE）
             # 这里用 MARK_PRICE 更稳

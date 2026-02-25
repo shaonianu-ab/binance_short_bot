@@ -12,6 +12,12 @@ log = logging.getLogger("strategy")
 
 
 class Strategy:
+    @staticmethod
+    def _extract_order_ref(resp) -> str:
+        if not isinstance(resp, dict):
+            return ""
+        return str(resp.get("orderId") or resp.get("algoId") or resp.get("clientAlgoId") or "")
+
     def __init__(
         self,
         token_registry: BinanceTokenRegistry,
@@ -121,8 +127,14 @@ class Strategy:
 
                 # 止盈止损开始
                 if self.take_profit_pct > 0 or self.stop_loss_pct > 0:
-                    # 取一个近似 entry：用 mark price（简单稳）
-                    entry_price = self.trader.get_mark_price(futures_symbol)
+                    # 取真实持仓 entryPrice（而不是 mark price），避免 TP/SL 与实际开仓价偏离。
+                    entry_price = None
+                    for _ in range(8):
+                        entry_price = self.trader.get_position_entry_price(futures_symbol, position_side="SHORT")
+                        if entry_price and entry_price > 0:
+                            break
+                        await asyncio.sleep(0.2)
+
                     if entry_price and entry_price > 0:
                         res = self.trader.place_tp_sl_for_short(
                             symbol=futures_symbol,
@@ -131,13 +143,16 @@ class Strategy:
                             stop_loss_pct=self.stop_loss_pct,
                         )
                         log.warning(
-                            "TP/SL placed: %s tp=%s sl=%s",
+                            "TP/SL placed: %s entry=%.8f tp_trigger=%s sl_trigger=%s tp_ref=%s sl_ref=%s",
                             futures_symbol,
-                            (res.get("tp") or {}).get("orderId") if res.get("tp") else None,
-                            (res.get("sl") or {}).get("orderId") if res.get("sl") else None,
+                            entry_price,
+                            res.get("tp_trigger"),
+                            res.get("sl_trigger"),
+                            self._extract_order_ref(res.get("tp")),
+                            self._extract_order_ref(res.get("sl")),
                         )
                     else:
-                        log.warning("TP/SL skipped (no entry_price): %s", futures_symbol)
+                        log.warning("TP/SL skipped (no live position entryPrice): %s", futures_symbol)
                 else:
                     log.warning("TP/SL all 0, TP/SL skipped: %s", futures_symbol)
             else:
